@@ -1,8 +1,8 @@
 from enum import Enum
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 app = FastAPI()
 
@@ -41,10 +41,16 @@ post_db = [
 
 
 def get_db_post() -> List[Timestamp]:
+    """
+    Returns the list of timestamp records.
+    """
     return post_db
 
 
 def get_db_dogs() -> Dict[int, Dog]:
+    """
+    Returns the dictionary of dog records.
+    """
     return dogs_db
 
 
@@ -52,9 +58,6 @@ def get_db_dogs() -> Dict[int, Dog]:
 async def root():
     """
     Root endpoint that returns a greeting message.
-
-    Returns:
-        dict: A dictionary with a greeting message.
     """
     return {"message": "Hello, User!"}
 
@@ -63,12 +66,6 @@ async def root():
 async def add_item(db=Depends(get_db_post)) -> Timestamp:
     """
     Create and return a new Timestamp.
-
-    Args:
-        db (List[Timestamp]): The list of Timestamp items.
-
-    Returns:
-        Timestamp: The newly created Timestamp.
     """
     max_id = max([i.id for i in db])
     dt = datetime.now()
@@ -79,16 +76,9 @@ async def add_item(db=Depends(get_db_post)) -> Timestamp:
 
 
 @app.get('/dog', response_model=List[Dog], summary='Get Dogs', operation_id='get_dogs_dog_get')
-async def get_dogs(kind: Optional[DogType] = None, db=Depends(get_db_dogs)) -> list[Dog]:
+async def get_dogs(kind: DogType = Query(None), db=Depends(get_db_dogs)) -> list[Dog]:
     """
-    Get a list of Dog items filtered by kind.
-
-    Args:
-        kind (Optional[DogType]): The kind of Dog to filter by.
-        db (Dict[int, Dog]): The database of Dog items.
-
-    Returns:
-        list[Dog]: A list of Dog items.
+    Get a list of Dog items filtered by kind. If 'kind' is not provided, it returns all dogs.
     """
     if kind:
         return list(filter(lambda x: x.kind == kind, db.values()))
@@ -99,13 +89,6 @@ async def get_dogs(kind: Optional[DogType] = None, db=Depends(get_db_dogs)) -> l
 async def create_dogs(dog: Dog, db=Depends(get_db_dogs)) -> Dog:
     """
     Create and return a new Dog item.
-
-    Args:
-        dog (Dog): The Dog item to create.
-        db (Dict[int, Dog]): The database of Dog items.
-
-    Returns:
-        Dog: The newly created Dog item.
     """
     if db.get(dog.pk):
         raise HTTPException(status_code=422, detail="pk already exists")
@@ -117,13 +100,6 @@ async def create_dogs(dog: Dog, db=Depends(get_db_dogs)) -> Dog:
 async def get_dog_by_pk(pk: int, db=Depends(get_db_dogs)) -> Dog:
     """
     Get a Dog item by its primary key (pk).
-
-    Args:
-        pk (int): The primary key of the Dog item to retrieve.
-        db (Dict[int, Dog]): The database of Dog items.
-
-    Returns:
-        Dog: The retrieved Dog item.
     """
     if not db.get(pk):
         raise HTTPException(status_code=422, detail="pk does not exists")
@@ -134,14 +110,6 @@ async def get_dog_by_pk(pk: int, db=Depends(get_db_dogs)) -> Dog:
 async def update_dog_by_pk(pk: int, dog: Dog, db=Depends(get_db_dogs)) -> Dog:
     """
     Update a Dog item by its primary key (pk).
-
-    Args:
-        pk (int): The primary key of the Dog item to update.
-        dog (Dog): The new Dog item data.
-        db (Dict[int, Dog]): The database of Dog items.
-
-    Returns:
-        Dog: The updated Dog item.
     """
     if not db.get(pk):
         raise HTTPException(status_code=422, detail="pk does not exists")
