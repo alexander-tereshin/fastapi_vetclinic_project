@@ -24,7 +24,7 @@ Installation
 1. Clone the repository:
 
 ```bash
-$ git clone https://github.com/yourusername/fastapi-dog-api.git
+$ git clone https://github.com/alexander-tereshin/fastapi-dog-api.git
 ```
 2. Install the required dependencies:
 
