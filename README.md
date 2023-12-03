@@ -41,6 +41,11 @@ Run the FastAPI application using Uvicorn:
 $ uvicorn main:app --reload
 ```
 
+To run the application in a Docker container, use the following command:
+
+```bash
+$ docker run -dp 127.0.0.1:5555:5555 alexandertereshin/fastapi_vetclinic_project
+```
 API Endpoints
 ---
 
